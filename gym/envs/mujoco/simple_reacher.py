@@ -12,7 +12,7 @@ class SimpleReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(self)
         self.xml_paths = natsorted(glob.glob(os.path.join(os.path.dirname(__file__), "assets/sim_vision_reach_xmls/*")))
         self.xml_iter = iter(self.xml_paths)
-        mujoco_env.MujocoEnv.__init__(self, self.xml_iter.__next__(), 2)
+        mujoco_env.MujocoEnv.__init__(self, self.xml_iter.__next__(), 5)
 
     def step(self, a):
         vec = self.get_body_com("fingertip")-self.get_body_com("target")
@@ -38,7 +38,7 @@ class SimpleReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         ])
 
     def get_image(self, width=64, height=64):
-        return self.sim.get_image(width, height)
+        return self.sim.render(width, height, camera_name="camera")
 
     def next(self):
-        mujoco_env.MujocoEnv.__init__(self, self.xml_iter.__next__(), 2)
+        mujoco_env.MujocoEnv.__init__(self, self.xml_iter.__next__(), 5)
