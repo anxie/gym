@@ -48,3 +48,6 @@ class TimeLimit(Wrapper):
 
     def next(self):
         self.env.next()
+
+    def next_object(self):
+        self.env.next_object()
