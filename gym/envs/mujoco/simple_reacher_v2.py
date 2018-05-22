@@ -8,7 +8,7 @@ from random import shuffle
 from natsort import natsorted
 
 
-class SimpleReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
+class SimpleReacherEnvV2(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self):
         gc.enable()
         utils.EzPickle.__init__(self)
@@ -20,7 +20,7 @@ class SimpleReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def step(self, a):
         vec = self.get_body_com("fingertip")-self.get_body_com("target")
-        reward_dist = - np.linalg.norm(vec[:2])
+        reward_dist = - np.linalg.norm(vec)
 
         reward_dist_tip = - np.linalg.norm(self.get_body_com("fingertip"))
 
@@ -36,6 +36,7 @@ class SimpleReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def reset_model(self):
         qpos = self.np_random.uniform(low=-0.2, high=0.2, size=self.model.nq) + self.init_qpos
         self.goal = np.asarray([0, 0])
+        self.goal[0] = self.np_random.uniform(low=-np.pi, high=np.pi)
         qpos[-2:] = self.goal
         qvel = self.init_qvel + self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)
         qvel[-2:] = 0
