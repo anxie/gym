@@ -16,10 +16,14 @@ class MultiReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.object_xml_paths = natsorted(glob.glob(os.path.join(os.path.dirname(__file__), "assets/reaching3/*")))
         self.object_xml_iter = iter(self.object_xml_paths)
         
-        self.xml_paths = natsorted(glob.glob(self.object_xml_iter.__next__() + "/*"))
+        self.xml_paths = natsorted(glob.glob(next(self.object_xml_iter) + "/*"))
         self.xml_iter = iter(self.xml_paths)
 
-        mujoco_env.MujocoEnv.__init__(self, self.xml_iter.__next__(), 5)
+        self.shuffled_xml_paths = list(self.xml_paths)
+        shuffle(self.shuffled_xml_paths)
+        self.shuffled_xml_iter = iter(self.shuffled_xml_paths)
+
+        mujoco_env.MujocoEnv.__init__(self, next(self.xml_iter), 5)
 
     def step(self, a):
         vec = self.get_body_com("fingertip")-self.get_body_com("target")
@@ -48,7 +52,7 @@ class MultiReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def reset_model(self):
         qpos = self.np_random.uniform(low=-0.2, high=0.2, size=self.model.nq) + self.init_qpos
         self.goal = np.asarray([0, 0])
-        # self.goal[0] = self.np_random.uniform(low=-np.pi, high=np.pi)
+        self.goal[0] = self.np_random.uniform(low=-np.pi, high=np.pi)
         qpos[-2:] = self.goal
         qvel = self.init_qvel + self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)
         qvel[-2:] = 0
@@ -69,10 +73,22 @@ class MultiReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return self.sim.render(width, height, camera_name="camera")
 
     def next(self):
-        mujoco_env.MujocoEnv.__init__(self, self.xml_iter.__next__(), 5)
+        mujoco_env.MujocoEnv.__init__(self, next(self.xml_iter), 5)
+
+    def next_random(self):
+        mujoco_env.MujocoEnv.__init__(self, next(self.shuffled_xml_iter), 5)
 
     def next_object(self):
-        self.xml_paths = natsorted(glob.glob(self.object_xml_iter.__next__() + "/*"))
+        try:
+            self.xml_paths = natsorted(glob.glob(next(self.object_xml_iter) + "/*"))
+        except StopIteration:
+            self.object_xml_iter = iter(self.object_xml_paths)
+            self.xml_paths = natsorted(glob.glob(next(self.object_xml_iter) + "/*"))
+
         self.xml_iter = iter(self.xml_paths)
 
-        mujoco_env.MujocoEnv.__init__(self, self.xml_iter.__next__(), 5)
+        self.shuffled_xml_paths = list(self.xml_paths)
+        shuffle(self.shuffled_xml_paths)
+        self.shuffled_xml_iter = iter(self.shuffled_xml_paths)
+
+        mujoco_env.MujocoEnv.__init__(self, next(self.xml_iter), 5)
