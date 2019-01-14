@@ -204,6 +204,44 @@ register(
 # 2D
 
 register(
+    id='Hook-v0',
+    entry_point='gym.envs.mujoco:HookEnv',
+    max_episode_steps=50,
+    reward_threshold=0.0,
+)
+
+register(
+    id='HookWithGripper-v0',
+    entry_point='gym.envs.mujoco:HookWithGripperEnv',
+    max_episode_steps=50,
+    reward_threshold=0.0,
+)
+
+register(
+    id='Sweeper-v0',
+    entry_point='gym.envs.mujoco:SweeperEnv',
+    max_episode_steps=50,
+    reward_threshold=0.0,
+)
+
+register(
+    id='SweeperWithGripper-v0',
+    entry_point='gym.envs.mujoco:SweeperWithGripperEnv',
+    max_episode_steps=50,
+    reward_threshold=0.0,
+)
+
+seeds = list(range(50))
+for seed in seeds:
+    register(
+        id='SweeperWithGripper-env-{}-v0'.format(seed),
+        entry_point='gym.envs.mujoco:SweeperWithGripperEnv',
+        max_episode_steps=50,
+        reward_threshold=0.0,
+        kwargs={'seed': seed}
+    )
+
+register(
     id='Reacher-v2',
     entry_point='gym.envs.mujoco:ReacherEnv',
     max_episode_steps=50,

@@ -24,7 +24,7 @@ def sweeper_with_gripper(num_cubes=3, cubes_pos=[0.0, 0.3], sweeper_pos=[0.0, 0.
     gripper = worldbody.body(name="gripper", pos=[0,0,0.25])
 
     gripper.inertial(pos="0 0 0", mass="1", diaginertia="16.667 16.667 16.667")
-    gripper.geom(type="box", size=".1 .03 .03", rgba="0.8 0.8 0.8 1", contype="0", conaffinity="0")
+    gripper.geom(type="box", size=".1 .03 .03", rgba="0.0 1.0 0.0 1.0", contype="0", conaffinity="0")
 
     gripper.joint(name="slide_x", type="slide", pos="0 0 0", axis="1 0 0", limited="true", range="-0.5 0.5", armature="0", damping="30", stiffness="0")
     gripper.joint(name="slide_y", type="slide", pos="0 0 0", axis="0 1 0", limited="true", range="-0.5 0.5", armature="0", damping="30", stiffness="0")
@@ -34,12 +34,12 @@ def sweeper_with_gripper(num_cubes=3, cubes_pos=[0.0, 0.3], sweeper_pos=[0.0, 0.
     fingers = gripper.body(name="fingers", pos=[0,0,0])
     finger_1 = fingers.body(name="finger_1", pos=[-0.08,0.0,-0.1])
     finger_1.joint(name="j_finger1", type="slide", pos="0 0 0", axis="1 0 0",  limited="true", range="0.0 0.0615")
-    finger_1.geom(condim="6", contype="1", conaffinity="1", type="box", size=".01 .02 .1", rgba="0.8 0.8 0.8 1",  mass="0.08")
+    finger_1.geom(condim="6", contype="1", conaffinity="1", friction="2 2 2", type="box", size=".01 .02 .1", rgba="0.0 1.0 0.0 1.0",  mass="0.08")
     finger_1.site(name="finger1_surf", pos="0.01 0 0", size=".0025 .0190 .095", type="box", rgba="0.0 1.0 0.0 0")
 
     finger_2 = fingers.body(name="finger_2", pos=[0.08,0.0,-0.1])
     finger_2.joint(name="j_finger2", type="slide", pos="0 0 0", axis="1 0 0")
-    finger_2.geom(condim="6", contype="1", conaffinity="1",  type="box", size=".01 .02 .1", rgba="0.8 0.8 0.8 1", mass="0.08")
+    finger_2.geom(condim="6", contype="1", conaffinity="1", friction="2 2 2", type="box", size=".01 .02 .1", rgba="0.0 1.0 0.0 1.0", mass="0.08")
     finger_2.site(name="finger2_surf", pos="-0.01 0 0", size=".0025 .0190 .095", type="box", rgba="1.0 0.0 0.0 0")
 
     sweeper_handle = worldbody.body(name="sweeper_handle", pos=sweeper_pos + [0])

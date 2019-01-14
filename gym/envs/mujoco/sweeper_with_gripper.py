@@ -5,7 +5,8 @@ from gym.envs.mujoco.dynamic_mjc.sweeper_with_gripper import sweeper_with_grippe
 
 class SweeperWithGripperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self, 
-                 substeps=50, 
+                 seed=None,
+                 substeps=20, 
                  im_height=64, 
                  im_width=64,
                  log_video=True,
@@ -27,12 +28,17 @@ class SweeperWithGripperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         with model.asfile() as f:
             mujoco_env.MujocoEnv.__init__(self, f.name, 5)
 
+        self._seed = seed
+
+        if self._seed is not None:
+            np.random.seed(self._seed)
+
     def step(self, a):  
         # compute reward
         video_frames = self.pos_control(a)
         ob = self._get_obs()
         done = False
-        return ob, 0, done, dict(reward_tool=None, reward_obj=None, video_frames=video_frames)
+        return ob, 0, done, dict(video_frames=video_frames, sweeper_pos=self.sweeper_pos)
 
     def pos_control(self, a):
         a = np.array(a)
@@ -60,6 +66,7 @@ class SweeperWithGripperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         qpos_curr = self.sim.data.qpos[:4]
         a_pos = a[:4]
+        step = (a_pos - qpos_curr) / substeps
 
         if self.log_video:
             video_frames = np.zeros((int(substeps / self.video_substeps),
@@ -71,6 +78,7 @@ class SweeperWithGripperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.sim.data.ctrl[-1] = a[-1]
 
         for i in range(substeps):
+            # self.sim.data.ctrl[:-1] = qpos_curr + (i+1)*step
             self.sim.step()
 
             if i % self.video_substeps == 0 and self.log_video:
@@ -80,10 +88,49 @@ class SweeperWithGripperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return video_frames
         
     def reset_model(self):
-        self.cubes_pos = [np.random.uniform(-0.35,0.35), np.random.uniform(0.15, 0.3)]
-        # self.sweeper_pos = [np.random.uniform(-0.1, 0.1), np.random.uniform(-0.05, 0.1)]
-        self.sweeper_pos = [0,0]
-        print(self.cubes_pos)
+        if self._seed is not None:
+            np.random.seed(self._seed)
+
+        ################# for data collection ######################
+        # self.cubes_pos = [np.random.uniform(-0.3,0.3), np.random.uniform(-0.1, 0.3)]  # for data collection
+        # self.sweeper_pos = [np.random.uniform(-0.1, 0.1), np.random.uniform(-0.1, 0.1)]  # for random data collection
+        # self.sweeper_pos = [0,0]  # for expert data collection
+
+
+
+
+
+        ################# for testing planning #####################
+        # self.cubes_pos = [np.random.uniform(0.1, 0.3), np.random.uniform(0.0, 0.1)]
+        # self.sweeper_pos = [np.random.uniform(-0.2, -0.1), np.random.uniform(-0.05, 0)]
+        # self.cubes_pos = [np.random.uniform(-0.2, 0.2), np.random.uniform(0.2, 0.3)]
+        
+        # self.cubes_pos = [0.2, 0.3]
+        # self.sweeper_pos = [-0.1, -0.025]
+
+
+
+
+        ################# for collecting expert gripper data to fit ar dist ######################
+        self.sweeper_pos = [np.random.uniform(-0.0625, 0.0625), np.random.uniform(-0.05, 0.05)]
+        if self.sweeper_pos[0] < 0:
+            self.cubes_pos = [np.random.uniform(self.sweeper_pos[0] + 0.15, 0.3), np.random.uniform(-0.1, 0.3)]
+        else:
+            self.cubes_pos = [np.random.uniform(-0.3, self.sweeper_pos[0] - 0.15), np.random.uniform(-0.1, 0.3)]
+
+
+
+
+        ################# for testing slippage on 12/24 ##################
+        # self.cubes_pos = [0.12383749802226976, 0.1021068223998294]
+        # self.sweeper_pos = [-0.057314282267020115, -0.004435712340069557]
+
+
+
+
+
+        # print(self.cubes_pos)
+        # print(self.sweeper_pos)
         model = sweeper_with_gripper(cubes_pos=self.cubes_pos, sweeper_pos=self.sweeper_pos)
         with model.asfile() as f:
             mujoco_env.MujocoEnv.__init__(self, f.name, 5)
