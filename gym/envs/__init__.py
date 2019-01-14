@@ -204,27 +204,6 @@ register(
 # 2D
 
 register(
-    id='Hook-v0',
-    entry_point='gym.envs.mujoco:HookEnv',
-    max_episode_steps=50,
-    reward_threshold=0.0,
-)
-
-register(
-    id='HookWithGripper-v0',
-    entry_point='gym.envs.mujoco:HookWithGripperEnv',
-    max_episode_steps=50,
-    reward_threshold=0.0,
-)
-
-register(
-    id='Sweeper-v0',
-    entry_point='gym.envs.mujoco:SweeperEnv',
-    max_episode_steps=50,
-    reward_threshold=0.0,
-)
-
-register(
     id='SweeperWithGripper-v0',
     entry_point='gym.envs.mujoco:SweeperWithGripperEnv',
     max_episode_steps=50,
