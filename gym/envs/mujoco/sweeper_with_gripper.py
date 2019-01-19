@@ -36,9 +36,15 @@ class SweeperWithGripperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def step(self, a):  
         # compute reward
         video_frames = self.pos_control(a)
-        ob = self._get_obs()
+        obs = self._get_obs()
         done = False
-        return ob, 0, done, dict(video_frames=video_frames, sweeper_pos=self.sweeper_pos)
+
+        sweeper_pos = obs[6:8]
+        cube_x_pos = np.average([obs[13], obs[20], obs[27]])
+        cube_y_pos = np.average([obs[14], obs[21], obs[28]])
+        cube_pos = [cube_x_pos, cube_y_pos]
+
+        return obs, 0, done, dict(video_frames=video_frames, sweeper_pos=sweeper_pos, cube_pos=cube_pos)
 
     def pos_control(self, a):
         a = np.array(a)
