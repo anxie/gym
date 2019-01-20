@@ -39,12 +39,42 @@ class SweeperWithGripperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         obs = self._get_obs()
         done = False
 
-        sweeper_pos = obs[6:8]
-        cube_x_pos = np.average([obs[13], obs[20], obs[27]])
-        cube_y_pos = np.average([obs[14], obs[21], obs[28]])
-        cube_pos = [cube_x_pos, cube_y_pos]
+        sweeper_pos = self.get_body_com("sweeper_handle")
+        cubes_pos = np.average([self.get_body_com("cube_0"), self.get_body_com("cube_1"), self.get_body_com("cube_2")], axis=0)
 
-        return obs, 0, done, dict(video_frames=video_frames, sweeper_pos=sweeper_pos, cube_pos=cube_pos)
+        projected_sweeper_pos = np.squeeze(np.round(self.project_point(sweeper_pos))).astype(np.uint8)
+        projected_cubes_pos = np.squeeze(np.round(self.project_point(cubes_pos))).astype(np.uint8)
+
+        return obs, 0, done, dict(video_frames=video_frames,
+            sweeper_pos=sweeper_pos,
+            cubes_pos=cubes_pos,
+            projected_sweeper_pos=projected_sweeper_pos,
+            projected_cubes_pos=projected_cubes_pos)
+
+    def project_point(self, point):
+        model_matrix = np.zeros((4, 4))
+        model_matrix[:3, :3] = self.sim.data.get_camera_xmat(self.camera_name).T
+        model_matrix[-1, -1] = 1
+
+        fovy_radians = np.deg2rad(self.sim.model.cam_fovy[self.sim.model.camera_name2id(self.camera_name)])
+        uh = 1. / np.tan(fovy_radians / 2)
+        uw = uh / (self.im_width / self.im_height)
+        extent = self.sim.model.stat.extent
+        far, near = self.sim.model.vis.map.zfar * extent, self.sim.model.vis.map.znear * extent
+        view_matrix = np.array([[uw, 0., 0., 0.],                        # matrix definition from
+                                [0., uh, 0., 0.],                        # https://stackoverflow.com/questions/18404890/how-to-build-perspective-projection-matrix-no-api
+                                [0., 0., far / (far - near), -1.],
+                                [0., 0., -2*far*near/(far - near), 0.]]) # Note Mujoco doubles this quantity
+
+        MVP_matrix = view_matrix.dot(model_matrix)
+        world_coord = np.ones((4, 1))
+        world_coord[:3, 0] = point - self.sim.data.get_camera_xpos(self.camera_name)
+
+        clip = MVP_matrix.dot(world_coord)
+        ndc = clip[:3] / clip[3]  # everything should now be in -1 to 1!!
+        col, row = (ndc[0] + 1) * self.im_width / 2, (-ndc[1] + 1) * self.im_height / 2
+
+        return self.im_height - row, col                 # rendering flipped around in height
 
     def pos_control(self, a):
         a = np.array(a)
