@@ -40,10 +40,10 @@ class SweeperWithGripperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         done = False
 
         sweeper_pos = self.get_body_com("sweeper_handle")
-        cubes_pos = np.average([self.get_body_com("cube_0"), self.get_body_com("cube_1"), self.get_body_com("cube_2")], axis=0)
+        cubes_pos = [self.get_body_com("cube_0"), self.get_body_com("cube_1"), self.get_body_com("cube_2")]
 
         projected_sweeper_pos = np.squeeze(np.round(self.project_point(sweeper_pos))).astype(np.uint8)
-        projected_cubes_pos = np.squeeze(np.round(self.project_point(cubes_pos))).astype(np.uint8)
+        projected_cubes_pos = [np.squeeze(np.round(self.project_point(pos))).astype(np.uint8) for pos in cubes_pos]
 
         return obs, 0, done, dict(video_frames=video_frames,
             sweeper_pos=sweeper_pos,
