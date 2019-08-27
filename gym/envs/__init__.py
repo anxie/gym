@@ -211,13 +211,6 @@ register(
 )
 
 register(
-    id='Clevr-v0',
-    entry_point='gym.envs.mujoco:ClevrEnv',
-    max_episode_steps=1000,
-    reward_threshold=0.0,
-)
-
-register(
     id='Reacher-v2',
     entry_point='gym.envs.mujoco:ReacherEnv',
     max_episode_steps=50,
