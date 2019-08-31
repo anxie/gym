@@ -1,5 +1,5 @@
 import numpy as np
-from gym import utils
+from gym import utils, spaces
 from gym.envs.mujoco import mujoco_env
 from gym.envs.mujoco.dynamic_mjc.gripper import gripper
 
@@ -19,8 +19,7 @@ class GripperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                  im_width=64,
                  log_video=True,
                  video_substeps=10,
-                 camera_name="overheadcam",
-                 max_episode_steps=10):
+                 camera_name="overheadcam"):
 
         utils.EzPickle.__init__(self)
 
@@ -30,36 +29,39 @@ class GripperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.log_video = log_video
         self.video_substeps = video_substeps
         self.camera_name = camera_name
-        self.max_episode_steps = max_episode_steps
-        self.curr_step = 0
-        self.target_pos = None
+        self.target_pos = GOAL_POSITIONS[3]
 
         model, self.objects = gripper()
         with model.asfile() as f:
             mujoco_env.MujocoEnv.__init__(self, f.name, 5)
 
+        self.action_space = spaces.Box(
+          low=np.asarray([-0.5, -0.5, 0.0, -3.14, 0.0]),
+          high=np.asarray([0.5, 0.5, 0.0, 3.14, 0.0]),
+          dtype=np.float32)
+
     def step(self, a):  
         video_frames = self.pos_control(a)
         obs = self._get_obs()
-        done = self.curr_step >= self.max_episode_steps
+        # done = self.curr_step >= self.max_episode_steps
 
-        obj_pos = self.data.get_body_xpos('obj_1').copy()
+        obj_pos = self.data.get_body_xpos('obj_1').copy()[:2]
         rew = -np.linalg.norm(obj_pos - self.target_pos)
 
-        return obs, rew, done, dict(video_frames=video_frames)
+        return obs, rew, False, dict(video_frames=video_frames)
 
     def pos_control(self, a):
         action = np.array(a)
-        torque = 0.0
+        # torque = 0.0
 
-        if a[-1] == 1:
-            torque = 0.1
-            action = np.asarray([0, 0, 0, 0, torque])
-            self.do_pos_simulation_with_substeps(action)
+        # if a[-1] == 1:
+        #     torque = 0.1
+        #     action = np.asarray([0, 0, 0, 0, torque])
+        #     self.do_pos_simulation_with_substeps(action)
 
-        action[-1] = torque
+        # action[-1] = torque
 
-        video_frames = [self.do_pos_simulation_with_substeps(action)]
+        video_frames = self.do_pos_simulation_with_substeps(action)
         return video_frames
 
     def do_pos_simulation_with_substeps(self, a, substeps=None):
@@ -92,8 +94,10 @@ class GripperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         with model.asfile() as f:
             mujoco_env.MujocoEnv.__init__(self, f.name, 5)
 
-        self.curr_step = 0
-        self.target_pos = np.random.choice(GOAL_POSITIONS)
+        self.action_space = spaces.Box(
+          low=np.asarray([-0.5, -0.5, 0.0, -3.14]),
+          high=np.asarray([0.5, 0.5, 0.0, 3.14]),
+          dtype=np.float32)
 
         # qpos = self.init_qpos
         # qvel = self.init_qvel

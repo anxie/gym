@@ -204,9 +204,16 @@ register(
 # 2D
 
 register(
+    id='Wrist-v0',
+    entry_point='gym.envs.mujoco:WristEnv',
+    max_episode_steps=15,
+    reward_threshold=0.0,
+)
+
+register(
     id='Gripper-v0',
     entry_point='gym.envs.mujoco:GripperEnv',
-    max_episode_steps=1000,
+    max_episode_steps=10,
     reward_threshold=0.0,
 )
 

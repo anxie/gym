@@ -8,8 +8,8 @@ SHAPES = ["box",
           "cylinder",
           "ellipsoid"]
 
-COLORS = [[0, 0, 1, 1],     # blue
-          [1, 0, 0, 1],     # red
+COLORS = [[1, 0, 0, 1],     # red
+          [0, 0, 1, 1],     # blue
           [0, 1, 0, 1],     # green
           [1, 1, 0, 1],     # purple
           [1, 1, 0, 1]]     # yellow
@@ -17,10 +17,10 @@ COLORS = [[0, 0, 1, 1],     # blue
 
 def gen_fixed_objects():
     N = 3
-    shapes, sizes, densities, colors, positions = [], [], [], []
+    shapes, sizes, densities, colors, positions = [], [], [], [], []
     for i in range(N):
         shapes.append(SHAPES[i])
-        sizes.append(np.random.uniform(0.06, 0.08, 3))
+        sizes.append(np.asarray([0.07, 0.07, 0.07]))
         colors.append(COLORS[i])
         positions.append(np.append(np.random.uniform(-0.25, 0.25, 2), 0.0))
     return N, shapes, sizes, densities, colors, positions
@@ -57,7 +57,7 @@ def gripper():
     worldbody.camera(name="maincam", mode="fixed", fovy="32", euler="0.7 0 0", pos="0 -1.1 1.3")
     worldbody.camera(name="overheadcam", mode= "fixed", pos="0. 0.7 1.0", euler="-0.55 0.0 0.0")
 
-    gripper = worldbody.body(name="gripper", pos=[0,0,0.25])
+    gripper = worldbody.body(name="gripper", pos=[0,0,0.15])
 
     gripper.inertial(pos="0 0 0", mass="1", diaginertia="16.667 16.667 16.667")
     gripper.geom(type="box", size=".1 .03 .03", rgba="0.5 0.5 0.5 1.0", contype="0", conaffinity="0")
